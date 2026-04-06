@@ -171,7 +171,7 @@ html,body{background:var(--bg);color:var(--g);font-family:var(--mono);font-size:
 
 /* ── REGOLE ── */
 .rule-card{padding:9px 11px;border:1px solid var(--br);margin-bottom:7px;background:var(--bg3);}
-.rule-card.r4{border-color:var(--am);}
+
 .rule-card-header{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
 .rule-name{flex:1;font-size:10px;color:var(--g);font-weight:bold;}
 .rule-name.am{color:var(--am);}
@@ -274,14 +274,13 @@ input[type=range]{accent-color:var(--g);}
     <div><span class="f-step">2.</span>Probabilità attesa = <span class="f-val">50% + (momentum × 20)</span> — clampata 5%–95%</div>
     <div><span class="f-step">3.</span>Gap lordo = <span class="f-val">Prob.attesa − Poly¢</span> · Gap netto = <span class="f-val">Gap lordo − 3¢ costi</span></div>
     <div><span class="f-step">4.</span>Se gap netto ≥ <span class="f-val">5¢</span> → Filtri (F1 volume · F2 poly fermo · F3 spread)</div>
-    <div><span class="f-step">5.</span>Se tutti 3 filtri verdi → Regola 4: <span class="f-val">Prob. ≥ 60%</span> → ESEGUI · altrimenti BLOCCA</div>
   </div>
 
   <div>
     <div class="val-header">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="background:var(--g);color:#000;padding:1px 7px;font-size:8px;font-weight:bold;">VALIDAZIONE</span>
-        <span class="val-title">F1: VOLUME · F2: POLY FERMO · F3: SPREAD · R4: PROB ≥60%</span>
+        <span class="val-title">F1: VOLUME · F2: POLY FERMO · F3: SPREAD · </span>
       </div>
       <div style="font-size:8px;color:var(--gdk);">SOGLIA GAP: <span id="thresh-lbl" style="color:var(--g);">5¢</span>
         <input type="range" min="2" max="12" step="0.5" value="5" id="thresh-sl" style="width:50px;margin-left:5px;vertical-align:middle;" oninput="setThresh(this.value)">
@@ -294,7 +293,7 @@ input[type=range]{accent-color:var(--g);}
     <div class="ptitle">ULTIME 10 OPERAZIONI</div>
     <div class="scrollable">
       <table class="hist-table">
-        <thead><tr><th>ORA</th><th>CRYPTO</th><th>GAP NETTO</th><th>PROB</th><th>R4</th><th>P&L $1K</th><th>DIR</th><th>ESITO</th></tr></thead>
+        <thead><tr><th>ORA</th><th>CRYPTO</th><th>GAP NETTO</th><th>PROB</th><th>P&L $1K</th><th>DIR</th><th>ESITO</th></tr></thead>
         <tbody id="last10-body"></tbody>
       </table>
     </div>
@@ -347,8 +346,8 @@ input[type=range]{accent-color:var(--g);}
     <div class="stat-box"><div class="stat-label">Fail F3 (Spread)</div><div class="stat-val rd" id="st-f3">0</div></div>
   </div>
   <div class="stat-grid-2">
-    <div class="stat-box"><div class="stat-label">Bloccati Regola 4</div><div class="stat-val am" id="st-r4">0</div></div>
     <div class="stat-box"><div class="stat-label">Win Rate</div><div class="stat-val am" id="st-wr">—%</div></div>
+    <div class="stat-box"><div class="stat-label">Tasso Validazione</div><div class="stat-val am" id="st-val-rate">—%</div></div>
   </div>
   <div class="divider"></div>
   <div class="ptitle">PERFORMANCE PER ASSET</div>
@@ -401,7 +400,7 @@ input[type=range]{accent-color:var(--g);}
     </div>
     <div class="scrollable">
       <table class="hist-table">
-        <thead><tr><th>#</th><th>DATA/ORA</th><th>CRYPTO</th><th>PREZZO</th><th>MOM%</th><th>PROB</th><th>R4</th><th>GAP NETTO</th><th>P&L $1K</th><th>DIR</th><th>F1</th><th>F2</th><th>F3</th><th>TEMPO</th><th>NOTE</th></tr></thead>
+        <thead><tr><th>#</th><th>DATA/ORA</th><th>CRYPTO</th><th>PREZZO</th><th>MOM%</th><th>PROB</th><th>GAP NETTO</th><th>P&L $1K</th><th>DIR</th><th>F1</th><th>F2</th><th>F3</th><th>TEMPO</th><th>NOTE</th></tr></thead>
         <tbody id="hist-ok-body"></tbody>
       </table>
     </div>
@@ -436,11 +435,11 @@ const BACKEND_URL = 'https://arbitrage-backend-production-ebb0.up.railway.app';
 const WS_URL = BACKEND_URL.replace('https','wss').replace('http','ws');
 const CAPITAL = 1000;
 const FEE=2, SLIP=1, COST=FEE+SLIP, SENS=20, MAX=180, W5M=30;
-const VOL_MIN=1.5, POLY_MAX=1.0, SPREAD_MAX=3.0, PROB_MIN=60;
+const VOL_MIN=1.5, POLY_MAX=1.0, SPREAD_MAX=3.0;
 
 // ── STATE ────────────────────────────────────────────────
 let momThresh=5, systemOn=true, activeTab='dashboard', activeHistTab='ok';
-let totalSeen=0, totalValid=0, totalDisc=0, totalR4Block=0;
+let totalSeen=0, totalValid=0, totalDisc=0;
 let failVol=0, failPoly=0, failSpread=0;
 let allTimePnl=0, pnl24h=0, portHistory=[CAPITAL];
 let histOk=[], histFail=[], last10=[];
@@ -466,6 +465,7 @@ let rules=[
   {id:2,name:'Filtro F1 — Volume Kraken',val:'>1.5×',on:true,editable:true,desc:'Il volume deve essere almeno 1.5× la media degli ultimi 30 minuti. Assicura che il momentum sia reale.',help:'Conferma che il movimento è reale'},
   {id:3,name:'Filtro F2 — Polymarket fermo',val:'<1¢/60s',on:true,editable:true,desc:'Polymarket non deve essere variato di più di 1¢ negli ultimi 60 secondi. Se si sta già muovendo il vantaggio è perso.',help:'Verifica che il mercato non ha ancora reagito'},
   {id:4,name:'Filtro F3 — Spread bid/ask',val:'<3¢',on:true,editable:true,desc:'Lo spread bid/ask deve essere inferiore a 3¢. Spread ampio significa liquidità bassa e costi nascosti.',help:'Garantisce liquidità sufficiente'},
+
 ];
 let ruleId=rules.length;
 
@@ -686,30 +686,20 @@ function processSignal(a,i,mom,prob,net,gross,val,now){
     else{failSpread++;failF='F3-SPREAD';failR=`SPREAD ${val.spread}¢ > ${SPREAD_MAX}¢`;failV=val.spread+'¢';failT=SPREAD_MAX+'¢';}
     histFail.unshift({time:fmtDate(now),asset:a,mom:mom.toFixed(3),prob:prob.toFixed(1),net:net.toFixed(2),failF,failR,failV,failT,blocco:'FILTRO'});
     if(histFail.length>200)histFail.pop();
-    last10.unshift({time:fmt(now),asset:a,net:net.toFixed(2),prob:prob.toFixed(1),r4pass:false,pnl:'0.00',dir:'—',esito:'SCARTATO'});
+    last10.unshift({time:fmt(now),asset:a,net:net.toFixed(2),prob:prob.toFixed(1),pnl:'0.00',dir:'—',esito:'SCARTATO'});
     if(last10.length>10)last10.pop();
     addLog(`✗ SCARTATO ${a} — ${failR}`,'warn');
     return;
   }
-  const r4Active=rules.find(r=>r.id===5)?.on;
-  const r4pass=!r4Active||(prob>=PROB_MIN);
-  if(!r4pass){
-    totalDisc++;totalR4Block++;
-    histFail.unshift({time:fmtDate(now),asset:a,mom:mom.toFixed(3),prob:prob.toFixed(1),net:net.toFixed(2),failF:'R4-PROB',failR:`PROB ${prob.toFixed(1)}% < ${PROB_MIN}%`,failV:prob.toFixed(1)+'%',failT:PROB_MIN+'%',blocco:'REGOLA 4'});
-    if(histFail.length>200)histFail.pop();
-    last10.unshift({time:fmt(now),asset:a,net:net.toFixed(2),prob:prob.toFixed(1),r4pass:false,pnl:'0.00',dir:'—',esito:'PROB<60%'});
-    if(last10.length>10)last10.pop();
-    addLog(`✗ BLOCCATO R4 ${a} — PROB ${prob.toFixed(1)}% < ${PROB_MIN}%`,'err');
-    return;
-  }
+
   totalValid++;
   const pnl=calcPnl(net,CAPITAL);
   allTimePnl+=pnl*0.08; pnl24h+=pnl*0.08;
   portHistory.push(parseFloat((CAPITAL+allTimePnl).toFixed(2)));
   if(portHistory.length>100)portHistory.shift();
-  const entry={time:fmtDate(now),asset:a,price:kp[i].price.toFixed(2),mom:mom.toFixed(3),prob:prob.toFixed(1),net:net.toFixed(2),gross:gross.toFixed(2),pnl:pnl.toFixed(2),dir:net>0?'BUY YES':'BUY NO',f1:val.f1,f2:val.f2,f3:val.f3,r4:r4pass,tempo:Math.floor(5+Math.random()*25)+'m',note:''};
+  const entry={time:fmtDate(now),asset:a,price:kp[i].price.toFixed(2),mom:mom.toFixed(3),prob:prob.toFixed(1),net:net.toFixed(2),gross:gross.toFixed(2),pnl:pnl.toFixed(2),dir:net>0?'BUY YES':'BUY NO',f1:val.f1,f2:val.f2,f3:val.f3,tempo:Math.floor(5+Math.random()*25)+'m',note:''};
   histOk.unshift(entry); if(histOk.length>200)histOk.pop();
-  last10.unshift({time:fmt(now),asset:a,net:net.toFixed(2),prob:prob.toFixed(1),r4pass:true,pnl:pnl.toFixed(2),dir:entry.dir,esito:'OK'});
+  last10.unshift({time:fmt(now),asset:a,net:net.toFixed(2),prob:prob.toFixed(1),pnl:pnl.toFixed(2),dir:entry.dir,esito:'OK'});
   if(last10.length>10)last10.pop();
   addLog(`✓ ESEGUITO ${a} — PROB ${prob.toFixed(1)}% · GAP ${net.toFixed(2)}¢ · P&L ${pnl>=0?'+':''}$${Math.abs(pnl).toFixed(2)} [${wsConnected?'LIVE':'SIM'}]`,'ok');
 }
@@ -736,11 +726,9 @@ function renderValCards(results){
   document.getElementById('val-cards').innerHTML=results.map((r)=>{
     if(!r.val)return`<div class="val-asset"><div class="val-asset-header"><span class="val-asset-name">${r.a}/USD</span><span class="val-score vs-none">CARICO</span></div><div style="padding:10px;font-size:8px;color:var(--gdk);">Buffer in accumulo...</div></div>`;
     const v=r.val;
-    const r4Active=rules.find(ru=>ru.id===5)?.on;
-    const r4pass=!r4Active||(r.prob>=PROB_MIN);
-    const allGood=v.allPass&&r4pass&&Math.abs(r.net)>=momThresh;
-    const sc=allGood?'vs-all':v.allPass&&!r4pass?'vs-part':v.score>=2?'vs-part':'vs-none';
-    const st=allGood?'4/4 ✓':v.allPass?`F+R4:${r4pass?'✓':'✗'}`:`${v.score}/3`;
+    const allGood=v.allPass&&Math.abs(r.net)>=momThresh;
+    const sc=allGood?'vs-all':v.score>=2?'vs-part':'vs-none';
+    const st=allGood?'3/3 ✓':`${v.score}/3`;
     const filters=[
       {label:'F1 — Volume Kraken',pass:v.f1,val:v.volRatio+'×',req:'>'+VOL_MIN+'×'},
       {label:'F2 — Poly fermo',pass:v.f2,val:v.polyDelta+'¢',req:'<'+POLY_MAX+'¢'},
@@ -748,7 +736,7 @@ function renderValCards(results){
     ];
     let sigC='vs-wait',sigT='IN ATTESA';
     if(allGood){sigC=r.net>0?'vs-green':'vs-red';sigT=r.net>0?'▲ BUY YES — ESEGUI':'▼ BUY NO — ESEGUI';}
-    else if(v.allPass&&!r4pass){sigC='vs-prob';sigT=`BLOCCATO R4 — ${r.prob.toFixed(1)}% < 60%`;}
+
     else if(!v.allPass){sigC='vs-red';sigT='FILTRI NON SUPERATI';}
     const pnl=calcPnl(r.net,CAPITAL);
     return`<div class="val-asset">
@@ -760,10 +748,10 @@ function renderValCards(results){
           <span class="filter-val ${f.pass?'fv-pass':'fv-fail'}">${f.val} ${f.pass?'✓':'req '+f.req}</span>
         </div>`).join('')}
       </div>
-      <div class="prob-row ${r4pass?'prob-pass':'prob-fail'}">
-        <div class="prob-icon ${r4pass?'pass':'fail'}">${r4pass?'✓':'✗'}</div>
-        <span style="flex:1;color:var(--gd);">R4 — Probabilità ≥60%</span>
-        <span style="color:${r4pass?'var(--g)':'var(--rd)'};font-size:9px;">${r.prob.toFixed(1)}% ${r4pass?'✓':'BLOCCO'}</span>
+      <div class="prob-row ✓">
+        <div class="prob-icon ✓">✓</div>
+        <span style="flex:1;color:var(--gd);"></span>
+        <span style="color:✓;font-size:9px;">${r.prob.toFixed(1)}% ✓</span>
       </div>
       <div class="val-signal ${sigC}">${sigT}</div>
       <div class="val-pnl">
@@ -782,10 +770,10 @@ function renderLast10(){
     <td style="color:var(--cy);">${h.asset}/USD</td>
     <td>${fmtC(parseFloat(h.net||0))}</td>
     <td>${fmtP(parseFloat(h.prob||0))}</td>
-    <td style="color:${h.r4pass?'var(--g)':'var(--rd)'};">${h.r4pass?'✓':'✗'}</td>
+    <td>${h.'var(--g)'}</td>
     <td>${h.esito==='OK'?fmtU(parseFloat(h.pnl||0)):'<span style="color:var(--gdk)">—</span>'}</td>
     <td>${h.esito==='OK'?`<span class="badge ${h.dir?.includes('YES')?'bg2':'br3'}">${h.dir}</span>`:'—'}</td>
-    <td><span class="badge ${h.esito==='OK'?'bg2':h.esito==='PROB<60%'?'ba':'br3'}">${h.esito}</span></td>
+    <td><span class="badge ${h.esito==='OK'?'bg2':'br3'}">${h.esito}</span></td>
   </tr>`).join('');
 }
 
@@ -810,7 +798,7 @@ function renderHistTable(){
       <td style="color:var(--g);">$${parseFloat(h.price).toLocaleString('en',{minimumFractionDigits:2})}</td>
       <td>${fmtPct(parseFloat(h.mom))}</td>
       <td>${fmtP(parseFloat(h.prob))}</td>
-      <td style="color:${h.r4?'var(--g)':'var(--rd)'};">${h.r4?'✓':'✗'}</td>
+
       <td>${fmtC(parseFloat(h.net))}</td>
       <td>${fmtU(pnl)}</td>
       <td><span class="badge ${h.dir?.includes('YES')?'bg2':'br3'}">${h.dir}</span></td>
@@ -830,10 +818,10 @@ function renderHistTable(){
       <td>${fmtPct(parseFloat(h.mom))}</td>
       <td>${fmtP(parseFloat(h.prob||50))}</td>
       <td>${fmtC(parseFloat(h.net))}</td>
-      <td style="color:${h.blocco==='REGOLA 4'?'var(--am)':'var(--rd)'};font-weight:bold;">${h.failF}</td>
-      <td style="color:${h.blocco==='REGOLA 4'?'var(--am)':'var(--rd)'};">${h.failV}</td>
+      <td style="color:var(--rd);font-weight:bold;">${h.failF}</td>
+      <td style="color:var(--rd);">${h.failV}</td>
       <td style="color:var(--gdk);">${h.failT}</td>
-      <td style="font-size:8px;color:${h.blocco==='REGOLA 4'?'var(--am)':'var(--rd)'};">${h.failR}</td>
+      <td style="font-size:8px;color:var(--rd);">${h.failR}</td>
     </tr>`).join('');
   }
 }
@@ -851,7 +839,7 @@ function updateStats(port){
   document.getElementById('st-f1').textContent=failVol;
   document.getElementById('st-f2').textContent=failPoly;
   document.getElementById('st-f3').textContent=failSpread;
-  document.getElementById('st-r4').textContent=totalR4Block;
+
   document.getElementById('st-wr').textContent=totalSeen>0?((totalValid/totalSeen)*100).toFixed(1)+'%':'—%';
   document.getElementById('st-ops-24h').textContent=histOk.length;
   if(histOk.length){
@@ -888,16 +876,16 @@ function updateStats(port){
 
 function renderRules(){
   document.getElementById('rules-list').innerHTML=rules.map(r=>`
-    <div class="rule-card ${r.id===5?'r4':''}">
+    <div class="rule-card">
       <div class="rule-card-header">
-        <span class="rule-name ${r.id===5?'am':''}">${r.id===5?'⚑ ':''} ${r.name}</span>
+        <span class="rule-name">${r.name}</span>
         <span class="rule-val-badge">${r.val}</span>
         <span class="rule-help" title="${r.help}">?</span>
         <button class="r-tog ${r.on?'on':'off'}" onclick="togRule(${r.id})">${r.on?'ATTIVA':'DISATTIVA'}</button>
       </div>
       <div class="rule-desc">${r.desc}</div>
       <div class="rule-actions">
-        ${r.editable?`<button class="r-btn r-edit" onclick="editRule(${r.id})">✎ MODIFICA SOGLIA</button><button class="r-btn r-del" onclick="delRule(${r.id})">✕ ELIMINA</button>`:'<span style="font-size:8px;color:var(--am);">⚑ Regola di sistema</span>'}
+        ${r.editable?`<button class="r-btn r-edit" onclick="editRule(${r.id})">✎ MODIFICA SOGLIA</button><button class="r-btn r-del" onclick="delRule(${r.id})">✕ ELIMINA</button>`:'<span style="font-size:8px;color:var(--gdk);">Regola di sistema</span>'}
       </div>
     </div>`).join('');
 }
@@ -980,7 +968,7 @@ renderKraken();renderPoly();
 const initR=['BTC','ETH','SOL'].map((a,i)=>({a,i,mom:0,prob:50,net:0,gross:0,pc:pp[i].price*100,val:null,ready:false}));
 renderValCards(initR);renderLast10();renderRules();updatePortChart();
 addLog('SISTEMA AVVIATO — ARBITRAGE TERMINAL v2.1','ok');
-addLog(`SOGLIA: ${momThresh}¢ · FILTRI: 3 · R4: PROB≥${PROB_MIN}% · CAPITALE: $${CAPITAL}`,'info');
+addLog(`SOGLIA: ${momThresh}¢ · FILTRI: 3 · CAPITALE: $${CAPITAL}`,'info');
 
 // Connetti al backend Railway
 connectWS();
