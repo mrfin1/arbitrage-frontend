@@ -466,7 +466,6 @@ let rules=[
   {id:2,name:'Filtro F1 — Volume Kraken',val:'>1.5×',on:true,editable:true,desc:'Il volume deve essere almeno 1.5× la media degli ultimi 30 minuti. Assicura che il momentum sia reale.',help:'Conferma che il movimento è reale'},
   {id:3,name:'Filtro F2 — Polymarket fermo',val:'<1¢/60s',on:true,editable:true,desc:'Polymarket non deve essere variato di più di 1¢ negli ultimi 60 secondi. Se si sta già muovendo il vantaggio è perso.',help:'Verifica che il mercato non ha ancora reagito'},
   {id:4,name:'Filtro F3 — Spread bid/ask',val:'<3¢',on:true,editable:true,desc:'Lo spread bid/ask deve essere inferiore a 3¢. Spread ampio significa liquidità bassa e costi nascosti.',help:'Garantisce liquidità sufficiente'},
-  {id:5,name:'Regola 4 — Probabilità minima 60%',val:'≥60%',on:false,editable:true,desc:'ULTIMO STEP: sia la probabilità attesa ≥60% SIA tutti i filtri verdi. Se la probabilità è sotto il 60% l\'operazione viene bloccata anche se tutti i filtri sono verdi.',help:'Blocco finale prima dell\'esecuzione'},
 ];
 let ruleId=rules.length;
 
