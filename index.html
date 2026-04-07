@@ -247,6 +247,7 @@ input[type=range]{accent-color:var(--g);}
   <button class="ntab" onclick="sw('statistiche',this)">STATISTICHE</button>
   <button class="ntab" onclick="sw('storico',this)">STORICO</button>
   <button class="ntab" onclick="sw('regole',this)">REGOLE</button>
+  <button class="ntab" onclick="sw('report',this)" style="color:var(--cy);">REPORT</button>
 </div>
 
 <div class="main">
@@ -496,6 +497,86 @@ input[type=range]{accent-color:var(--g);}
   <div class="ptitle">REGOLE ATTIVE</div>
   <div id="rules-list"></div>
   <button class="add-rule-btn" onclick="addRule()">[ + AGGIUNGI NUOVA REGOLA ]</button>
+</div>
+</div>
+
+
+<!-- ══ REPORT ══ -->
+<div id="tab-report" style="display:none;">
+<div class="panel-full">
+
+  <!-- Controlli report -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div class="ptitle" style="border:none;margin:0;padding:0;">REPORT AUTOMATICO — SESSIONE CORRENTE</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="clearReport()" style="padding:4px 10px;background:transparent;border:1px solid var(--rd);color:var(--rd);font-family:var(--mono);font-size:8px;cursor:pointer;">✕ RESET</button>
+      <button onclick="exportReport('excel')" style="padding:4px 10px;background:transparent;border:1px solid var(--g);color:var(--g);font-family:var(--mono);font-size:8px;cursor:pointer;margin-right:4px;">⬇ ESPORTA EXCEL</button>
+      <button onclick="exportReport('json')" style="padding:4px 10px;background:transparent;border:1px solid var(--gdk);color:var(--gdk);font-family:var(--mono);font-size:8px;cursor:pointer;">⬇ ESPORTA JSON</button>
+    </div>
+  </div>
+
+  <!-- KPI Report -->
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px;">
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Segnali Registrati</div>
+      <div style="font-size:16px;font-weight:bold;color:var(--g);" id="rp-total">0</div>
+    </div>
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Score Medio</div>
+      <div style="font-size:16px;font-weight:bold;color:var(--am);" id="rp-avg-score">—</div>
+    </div>
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Score Max</div>
+      <div style="font-size:16px;font-weight:bold;color:var(--g);" id="rp-max-score">—</div>
+    </div>
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Segnali ≥ Soglia</div>
+      <div style="font-size:16px;font-weight:bold;color:var(--am);" id="rp-signals">0</div>
+    </div>
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">P&L Stimato Totale</div>
+      <div style="font-size:16px;font-weight:bold;" id="rp-pnl">+$0.00</div>
+    </div>
+    <div style="padding:7px 9px;background:var(--bg3);border:1px solid var(--br);">
+      <div style="font-size:7px;color:var(--gdk);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Durata Sessione</div>
+      <div style="font-size:16px;font-weight:bold;color:var(--cy);" id="rp-duration">0m</div>
+    </div>
+  </div>
+
+  <!-- Grafico score nel tempo -->
+  <div style="margin-bottom:12px;">
+    <div class="ptitle">SCORE NEL TEMPO — BTC 5M (verde) e 15M (ciano)</div>
+    <div style="position:relative;width:100%;height:100px;"><canvas id="chart-report"></canvas></div>
+  </div>
+
+  <!-- Distribuzione score -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="background:var(--bg3);border:1px solid var(--br);padding:10px;">
+      <div class="ptitle">DISTRIBUZIONE SCORE 5M</div>
+      <div style="position:relative;height:80px;"><canvas id="chart-dist-5m"></canvas></div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--br);padding:10px;">
+      <div class="ptitle">DISTRIBUZIONE SCORE 15M</div>
+      <div style="position:relative;height:80px;"><canvas id="chart-dist-15m"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tabella log segnali -->
+  <div class="ptitle">LOG COMPLETO SEGNALI</div>
+  <div style="overflow-x:auto;">
+    <table class="hist-table">
+      <thead>
+        <tr>
+          <th>#</th><th>ORA</th><th>FINESTRA</th>
+          <th>KRAKEN $</th><th>TARGET $</th><th>DISTANZA</th>
+          <th>MIN RIM.</th><th>SCORE</th><th>UP¢</th><th>DOWN¢</th>
+          <th>SEGNALE</th><th>P&L $1K</th>
+        </tr>
+      </thead>
+      <tbody id="rp-table-body"></tbody>
+    </table>
+  </div>
+
 </div>
 </div>
 
@@ -1061,6 +1142,7 @@ function sw(tab,btn){
   if(tab==='statistiche'){updateStatChart();updatePnlDist();buildCalendar();}
   else if(tab==='storico')renderHistTable();
   else if(tab==='regole')renderRules();
+  else if(tab==='report'){updateReport();}
 }
 function swHist(tab,btn){
   activeHistTab=tab;
@@ -1100,8 +1182,15 @@ addLog('FINESTRE: 5M e 15M · SCORE SOGLIA: '+scoreThresh+' · CAPITALE: $'+CAPI
 
 connectWS();
 fetchPolyRest();
-setInterval(fetchPolyRest,8000);
+setInterval(fetchPolyRest,3000);
 setInterval(tick,2500);
+
+// Loop display ogni 1 secondo — aggiorna colonne con dati già in memoria
+setInterval(function() {
+  if (activeTab === 'dashboard' && polyData && Object.keys(polyData).length) {
+    updateSignalCols(null, polyData);
+  }
+}, 1000);
 
 // ── FUNZIONI SEGNALI BTC OPZIONE B ───────────────────────
 function fmtTimer(minRimasti) {
@@ -1190,6 +1279,22 @@ function renderSignalCol(finestra, dati) {
 }
 
 function updateSignalCols(signalsFromWS, polyData) {
+  // Registra nel report ogni volta che arrivano dati freschi
+  if (polyData) {
+    ['5m','15m'].forEach(fin => {
+      const m = polyData[fin] && polyData[fin].BTC;
+      if (!m || !m.priceToBeat) return;
+      const btc = kp[0] ? kp[0].price : 0;
+      if (!btc) return;
+      const distanza = btc - m.priceToBeat;
+      const volAttesa = 30 * (m.minRimasti || 1);
+      const score = parseFloat((distanza / volAttesa).toFixed(4));
+      recordReportEntry(fin, btc, m, score);
+    });
+    // Aggiorna stats report ogni 10 entries
+    if (reportLog.length % 10 === 0) updateReport();
+  }
+
   if (signalsFromWS && signalsFromWS.length) {
     ['5m','15m'].forEach(fin => {
       const s = signalsFromWS.find(x => x.finestra === fin);
@@ -1237,6 +1342,244 @@ setInterval(function() {
     timer.style.color = tc;
   });
 }, 1000);
+
+
+// ── REPORT ENGINE ────────────────────────────────────────
+let reportLog = [];
+let reportCharts = {};
+const REPORT_MAX = 500;
+
+function recordReportEntry(fin, krakenPrice, polyMkt, score) {
+  if (!polyMkt) return;
+  const direzione = score >= scoreThresh ? 'BUY UP' : score <= -scoreThresh ? 'BUY DOWN' : null;
+  const prezzoC = direzione === 'BUY UP' ? polyMkt.prezzoUp : direzione === 'BUY DOWN' ? polyMkt.prezzoDown : null;
+  const pnlNetto = prezzoC ? parseFloat(((100 - prezzoC) - 3).toFixed(2)) : null;
+  const pnl1k = pnlNetto ? parseFloat((pnlNetto / 100 * 1000).toFixed(2)) : null;
+
+  reportLog.push({
+    time: fmt(new Date()),
+    finestra: fin,
+    krakenPrice: parseFloat(krakenPrice.toFixed(2)),
+    priceToBeat: polyMkt.priceToBeat,
+    distanza: parseFloat((krakenPrice - (polyMkt.priceToBeat || krakenPrice)).toFixed(2)),
+    minRimasti: polyMkt.minRimasti,
+    score: parseFloat(score.toFixed(4)),
+    prezzoUp: polyMkt.prezzoUp,
+    prezzoDown: polyMkt.prezzoDown,
+    direzione,
+    pnl1k
+  });
+
+  if (reportLog.length > REPORT_MAX) reportLog.shift();
+}
+
+function updateReport() {
+  if (!reportLog.length) return;
+
+  const all = reportLog;
+  const signals = all.filter(r => r.direzione !== null);
+  const scores = all.map(r => Math.abs(r.score));
+  const avgScore = scores.reduce((s,v)=>s+v,0)/scores.length;
+  const maxScore = Math.max(...scores);
+  const totalPnl = signals.reduce((s,r)=>s+(r.pnl1k||0),0);
+  const dur = Math.floor((Date.now() - startTime) / 60000);
+
+  document.getElementById('rp-total').textContent = all.length;
+  document.getElementById('rp-avg-score').textContent = avgScore.toFixed(3);
+  document.getElementById('rp-max-score').textContent = maxScore.toFixed(3);
+  document.getElementById('rp-signals').textContent = signals.length;
+  document.getElementById('rp-pnl').innerHTML = '<span style="color:' + (totalPnl>=0?'var(--g)':'var(--rd)') + '">' + (totalPnl>=0?'+':'') + '$' + Math.abs(totalPnl).toFixed(2) + '</span>';
+  document.getElementById('rp-duration').textContent = dur + 'm';
+
+  // Aggiorna tabella (ultimi 100)
+  const tb = document.getElementById('rp-table-body');
+  if (tb) {
+    const recent = all.slice(-100).reverse();
+    tb.innerHTML = recent.map((r,i) => {
+      const sc = Math.abs(r.score);
+      const above = sc >= scoreThresh;
+      const scColor = above ? (r.score>0?'var(--g)':'var(--rd)') : 'var(--am)';
+      return '<tr>' +
+        '<td style="color:var(--gdk);">' + (all.length - i) + '</td>' +
+        '<td style="color:var(--gdk);font-size:8px;">' + r.time + '</td>' +
+        '<td><span style="color:' + (r.finestra==='5m'?'var(--cy)':'var(--am)') + ';font-size:9px;border:1px solid;padding:1px 5px;">' + r.finestra.toUpperCase() + '</span></td>' +
+        '<td style="color:var(--g);">$' + r.krakenPrice.toLocaleString('en') + '</td>' +
+        '<td style="color:var(--cy);">' + (r.priceToBeat ? '$' + r.priceToBeat.toLocaleString('en') : '—') + '</td>' +
+        '<td style="color:' + (r.distanza>=0?'var(--g)':'var(--rd)') + ';">' + (r.distanza>=0?'+':'') + '$' + Math.round(r.distanza) + '</td>' +
+        '<td style="color:' + (r.minRimasti<2?'var(--rd)':r.minRimasti<5?'var(--am)':'var(--g)') + ';">' + r.minRimasti.toFixed(1) + 'm</td>' +
+        '<td style="color:' + scColor + ';font-weight:bold;">' + (r.score>=0?'+':'') + r.score.toFixed(3) + '</td>' +
+        '<td style="color:var(--g);">' + r.prezzoUp + '¢</td>' +
+        '<td style="color:var(--rd);">' + r.prezzoDown + '¢</td>' +
+        '<td>' + (r.direzione ? '<span style="background:' + (r.direzione==='BUY UP'?'var(--g)':'var(--rd)') + ';color:#000;padding:1px 5px;font-size:8px;font-weight:bold;">' + r.direzione + '</span>' : '<span style="color:var(--gdk);font-size:9px;">ATTESA</span>') + '</td>' +
+        '<td style="color:' + (r.pnl1k&&r.pnl1k>0?'var(--g)':'var(--gdk)') + ';">' + (r.pnl1k ? (r.pnl1k>=0?'+':'') + '$' + Math.abs(r.pnl1k).toFixed(2) : '—') + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // Grafici
+  updateReportCharts();
+}
+
+function updateReportCharts() {
+  if (activeTab !== 'report') return;
+
+  // Grafico score nel tempo
+  const last60 = reportLog.slice(-60);
+  const labels = last60.map(r => r.time);
+  const scores5m  = last60.map(r => r.finestra === '5m'  ? r.score : null);
+  const scores15m = last60.map(r => r.finestra === '15m' ? r.score : null);
+
+  if (reportCharts.main) {
+    reportCharts.main.data.labels = labels;
+    reportCharts.main.data.datasets[0].data = scores5m;
+    reportCharts.main.data.datasets[1].data = scores15m;
+    reportCharts.main.update('none');
+  } else {
+    const ctx = document.getElementById('chart-report');
+    if (!ctx) return;
+    reportCharts.main = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: '5M', data: scores5m, borderColor: '#00FF41', backgroundColor: 'rgba(0,255,65,0.05)', borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true },
+          { label: '15M', data: scores15m, borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.05)', borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true },
+          { label: 'Soglia+', data: Array(labels.length).fill(scoreThresh), borderColor: 'rgba(255,183,0,0.4)', borderWidth: 1, borderDash: [4,3], pointRadius: 0 },
+          { label: 'Soglia-', data: Array(labels.length).fill(-scoreThresh), borderColor: 'rgba(255,58,58,0.4)', borderWidth: 1, borderDash: [4,3], pointRadius: 0 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { display: false },
+          y: { ticks: { font: { size: 7, family: 'Share Tech Mono' }, color: '#007A1F', callback: v => v.toFixed(1) }, grid: { color: 'rgba(0,255,65,0.04)' }, border: { color: 'rgba(0,255,65,0.15)' } }
+        }
+      }
+    });
+  }
+
+  // Distribuzione score per finestra
+  ['5m', '15m'].forEach(fin => {
+    const finScores = reportLog.filter(r => r.finestra === fin).map(r => r.score);
+    if (!finScores.length) return;
+    const buckets = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
+    const counts = Array(buckets.length - 1).fill(0);
+    finScores.forEach(s => {
+      for (let i = 0; i < buckets.length - 1; i++) {
+        if (s >= buckets[i] && s < buckets[i+1]) { counts[i]++; break; }
+      }
+    });
+    const labels = buckets.slice(0,-1).map((b,i) => b + ' → ' + buckets[i+1]);
+    const colors = buckets.slice(0,-1).map(b => b >= scoreThresh ? 'rgba(0,255,65,0.6)' : b <= -scoreThresh ? 'rgba(255,58,58,0.6)' : 'rgba(255,183,0,0.4)');
+    const chartId = 'chart-dist-' + fin;
+    if (reportCharts[fin]) {
+      reportCharts[fin].data.datasets[0].data = counts;
+      reportCharts[fin].update('none');
+    } else {
+      const ctx = document.getElementById(chartId);
+      if (!ctx) return;
+      reportCharts[fin] = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: { labels, datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { font: { size: 7, family: 'Share Tech Mono' }, color: '#007A1F', maxRotation: 45 }, grid: { display: false }, border: { color: 'rgba(0,255,65,0.15)' } },
+            y: { ticks: { font: { size: 7, family: 'Share Tech Mono' }, color: '#007A1F' }, grid: { color: 'rgba(0,255,65,0.04)' }, border: { color: 'rgba(0,255,65,0.15)' } }
+          }
+        }
+      });
+    }
+  });
+}
+
+function clearReport() {
+  if (!confirm('Resettare il report? Tutti i dati verranno persi.')) return;
+  reportLog = [];
+  Object.values(reportCharts).forEach(c => c.destroy());
+  reportCharts = {};
+  updateReport();
+  addLog('REPORT RESETTATO', 'warn');
+}
+
+function exportReport(format) {
+  if (!reportLog.length) { addLog('NESSUN DATO DA ESPORTARE', 'warn'); return; }
+  if (format === 'excel') {
+    exportExcel();
+  } else {
+    exportJSON();
+  }
+}
+
+function exportJSON() {
+  const data = {
+    sessionStart: new Date(startTime).toISOString(),
+    sessionDuration: Math.floor((Date.now() - startTime) / 60000) + 'm',
+    totalEntries: reportLog.length,
+    signals: reportLog.filter(r => r.direzione !== null).length,
+    scoreThreshold: scoreThresh,
+    log: reportLog
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'arbitrage_report_' + fmt(new Date()).replace(/:/g,'-') + '.json';
+  a.click();
+  addLog('REPORT JSON ESPORTATO — ' + reportLog.length + ' righe', 'ok');
+}
+
+function exportExcel() {
+  // Costruisci CSV formattato per Excel (separatore ;  per compatibilità italiana)
+  const sep = ';';
+  const headers = [
+    '#', 'ORA', 'FINESTRA', 'KRAKEN $', 'TARGET $', 'DISTANZA $',
+    'MIN RIMASTI', 'SCORE', 'UP ¢', 'DOWN ¢', 'SEGNALE', 'P&L $1K'
+  ];
+
+  const rows = reportLog.map((r, i) => [
+    i + 1,
+    r.time,
+    r.finestra.toUpperCase(),
+    r.krakenPrice,
+    r.priceToBeat || '',
+    r.distanza,
+    r.minRimasti,
+    r.score,
+    r.prezzoUp,
+    r.prezzoDown,
+    r.direzione || 'ATTESA',
+    r.pnl1k || ''
+  ]);
+
+  // Aggiungi riga riepilogo in fondo
+  const signals = reportLog.filter(r => r.direzione !== null);
+  const totalPnl = signals.reduce((s,r) => s + (r.pnl1k||0), 0);
+  const avgScore = reportLog.reduce((s,r) => s + Math.abs(r.score), 0) / reportLog.length;
+  rows.push([]);
+  rows.push(['RIEPILOGO', '', '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Totale letture', reportLog.length, '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Segnali attivati', signals.length, '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Score medio', avgScore.toFixed(4), '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Score massimo', Math.max(...reportLog.map(r => Math.abs(r.score))).toFixed(4), '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['P&L stimato totale $1K', totalPnl.toFixed(2), '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Soglia score', scoreThresh, '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['Durata sessione (min)', Math.floor((Date.now() - startTime) / 60000), '', '', '', '', '', '', '', '', '', '']);
+
+  const csvContent = '﻿' + // BOM per Excel italiano
+    headers.join(sep) + '\n' +
+    rows.map(r => r.join(sep)).join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'arbitrage_report_' + fmt(new Date()).replace(/:/g,'-') + '.csv';
+  a.click();
+  addLog('REPORT EXCEL ESPORTATO — ' + reportLog.length + ' righe', 'ok');
+}
 
 </script>
 </body>
