@@ -517,7 +517,7 @@ let totalSeen=0, totalValid=0, totalDisc=0;
 let failVol=0, failPoly=0, failSpread=0;
 let allTimePnl=0, pnl24h=0, portHistory=[CAPITAL];
 let histOk=[], histFail=[], last10=[];
-let charts={}, startTime=Date.now();
+let polyData={},charts={}, startTime=Date.now();
 let wsConn=null, wsConnected=false, reconnectTimer=null;
 
 // Prezzi live
@@ -605,7 +605,7 @@ function connectWS(){
             if(pBuf.BTC.length>MAX)pBuf.BTC.shift();
           }
         }
-        if(msg.type==='polymarkets'&&msg.data){
+        if(msg.type==='polymarkets'&&msg.data){polyData=msg.data;updateSignalCols(null,polyData);
           polyData=msg.data;
           document.getElementById('poly-src').textContent='LIVE';
           document.getElementById('poly-src').style.color='var(--g)';
@@ -647,8 +647,21 @@ async function fetchPolyRest(){
       polyData=d.polymarkets;
       document.getElementById('poly-src').textContent='LIVE';
       document.getElementById('poly-src').style.color='var(--g)';
+      // Aggiorna colonne segnali con i nuovi dati
+      updateSignalCols(null, polyData);
     }
-  }catch(e){}
+    if(d.kraken){
+      Object.entries(d.kraken).forEach(([sym,price])=>{
+        const asset=sym.replace('/USD','');
+        const idx=['BTC','ETH','SOL'].indexOf(asset);
+        if(idx<0)return;
+        const prev=kp[idx].price;
+        kp[idx]={...kp[idx],price,chg:prev?(price-prev)/prev*100:0};
+        pBuf[asset].push(price);
+        if(pBuf[asset].length>MAX)pBuf[asset].shift();
+      });
+    }
+  }catch(e){ console.log('[REST] Errore:', e.message); }
 }
 
 // ── VALIDATION ───────────────────────────────────────────
@@ -1087,7 +1100,7 @@ addLog('FINESTRE: 5M e 15M · SCORE SOGLIA: '+scoreThresh+' · CAPITALE: $'+CAPI
 
 connectWS();
 fetchPolyRest();
-setInterval(fetchPolyRest,30000);
+setInterval(fetchPolyRest,8000);
 setInterval(tick,2500);
 
 // ── FUNZIONI SEGNALI BTC OPZIONE B ───────────────────────
@@ -1225,9 +1238,6 @@ setInterval(function() {
   });
 }, 1000);
 
-</script>
-</body>
-</html>
 </script>
 </body>
 </html>
