@@ -751,7 +751,7 @@ function tick(){
 
   if(activeTab==='dashboard'){
     renderKraken();renderPoly();renderSignals();
-    renderValCards();renderLast10();updatePortChart();
+    renderLast10();updatePortChart();
   } else if(activeTab==='statistiche'){updateStatChart();updatePnlDist();}
   else if(activeTab==='storico'){renderHistTable();}
 }
@@ -885,45 +885,7 @@ function renderSignals(){
   document.getElementById('signals-body').innerHTML=rows.join('');
 }
 
-function renderValCards(){
-  const val=validate(0);
-  const assets=['BTC'];
-  document.getElementById('val-cards').innerHTML=assets.map(a=>{
-    const sc=val.allPass?'vs-all':val.score>=2?'vs-part':'vs-none';
-    const st=val.allPass?'3/3 ✓':`${val.score}/3`;
-    const filters=[
-      {label:'F1 — Volume Kraken',pass:val.f1,val:val.volRatio+'×',req:'>'+VOL_MIN+'×'},
-      {label:'F2 — Poly fermo',pass:val.f2,val:val.polyDelta+'¢',req:'<'+POLY_MAX+'¢'},
-      {label:'F3 — Spread',pass:val.f3,val:val.spread+'¢',req:'<'+SPREAD_MAX+'¢'},
-    ];
-    const btcPrice=kp[0].price;
-    const m15=polyData['15m']?.BTC;
-    const dist=m15?btcPrice-m15.priceToBeat:0;
-    const score=m15?calcolaScore(dist,m15.minRimasti||1):0;
-    const sigC=val.allPass&&Math.abs(score)>=scoreThresh?(score>0?'vs-green':'vs-red'):'vs-wait';
-    const sigT=val.allPass&&Math.abs(score)>=scoreThresh?(score>0?'▲ BUY UP — ESEGUI':'▼ BUY DOWN — ESEGUI'):'IN ATTESA SEGNALE';
-    const prezzoC=score>0?m15?.prezzoUp:m15?.prezzoDown;
-    const pnlN=prezzoC?calcolaPnlNetto(prezzoC):0;
-    return `<div class="val-asset" style="grid-column:1/-1;">
-      <div class="val-asset-header"><span class="val-asset-name">BTC/USD</span><span class="val-score ${sc}">${st}</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;">
-        ${filters.map(f=>`
-        <div class="filter-list">
-          <div class="filter-row ${f.pass?'fr-pass':'fr-fail'}">
-            <div class="filter-icon ${f.pass?'fi-pass':'fi-fail'}">${f.pass?'✓':'✗'}</div>
-            <span class="filter-name">${f.label}</span>
-            <span class="filter-val ${f.pass?'fv-pass':'fv-fail'}">${f.val} ${f.pass?'✓':'req '+f.req}</span>
-          </div>
-        </div>`).join('')}
-      </div>
-      <div class="val-signal ${sigC}">${sigT}</div>
-      <div class="val-pnl">
-        <span class="vp-k">Score 15M</span><span class="vp-v" style="color:${Math.abs(score)>=scoreThresh?'var(--g)':'var(--gdk)'};">${score.toFixed(3)}</span>
-        <span class="vp-k">P&L netto $1K</span><span class="vp-v" style="color:${pnlN>0?'var(--g)':'var(--gdk)'};">${pnlN>0?'+':''}$${Math.abs(pnlSu1K(pnlN)).toFixed(2)}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
+
 
 function renderLast10(){
   const tb=document.getElementById('last10-body');
@@ -1263,6 +1225,9 @@ setInterval(function() {
   });
 }, 1000);
 
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
