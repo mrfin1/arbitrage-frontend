@@ -510,8 +510,10 @@ input[type=range]{accent-color:var(--g);}
     <div class="ptitle" style="border:none;margin:0;padding:0;">REPORT AUTOMATICO — SESSIONE CORRENTE</div>
     <div style="display:flex;gap:8px;">
       <button onclick="clearReport()" style="padding:4px 10px;background:transparent;border:1px solid var(--rd);color:var(--rd);font-family:var(--mono);font-size:8px;cursor:pointer;">✕ RESET</button>
-      <button onclick="exportReport('excel')" style="padding:4px 10px;background:transparent;border:1px solid var(--g);color:var(--g);font-family:var(--mono);font-size:8px;cursor:pointer;margin-right:4px;">⬇ ESPORTA EXCEL</button>
-      <button onclick="exportReport('json')" style="padding:4px 10px;background:transparent;border:1px solid var(--gdk);color:var(--gdk);font-family:var(--mono);font-size:8px;cursor:pointer;">⬇ ESPORTA JSON</button>
+      <button onclick="loadReportFromRailway()" style="padding:4px 10px;background:transparent;border:1px solid var(--cy);color:var(--cy);font-family:var(--mono);font-size:8px;cursor:pointer;margin-right:4px;">⬆ CARICA DA RAILWAY</button>
+      <button onclick="exportExcelFromRailway()" style="padding:4px 10px;background:transparent;border:1px solid var(--g);color:var(--g);font-family:var(--mono);font-size:8px;cursor:pointer;margin-right:4px;">⬇ EXCEL DA RAILWAY</button>
+      <button onclick="exportReport('excel')" style="padding:4px 10px;background:transparent;border:1px solid var(--am);color:var(--am);font-family:var(--mono);font-size:8px;cursor:pointer;margin-right:4px;">⬇ EXCEL LOCALE</button>
+      <button onclick="exportReport('json')" style="padding:4px 10px;background:transparent;border:1px solid var(--gdk);color:var(--gdk);font-family:var(--mono);font-size:8px;cursor:pointer;">⬇ JSON</button>
     </div>
   </div>
 
@@ -1142,7 +1144,7 @@ function sw(tab,btn){
   if(tab==='statistiche'){updateStatChart();updatePnlDist();buildCalendar();}
   else if(tab==='storico')renderHistTable();
   else if(tab==='regole')renderRules();
-  else if(tab==='report'){updateReport();}
+  else if(tab==='report'){updateReport();loadReportFromRailway();}
 }
 function swHist(tab,btn){
   activeHistTab=tab;
@@ -1510,6 +1512,38 @@ function exportReport(format) {
     exportExcel();
   } else {
     exportJSON();
+  }
+}
+
+async function loadReportFromRailway() {
+  try {
+    addLog('Caricamento report da Railway...', 'info');
+    const r = await fetch(BACKEND_URL + '/report?limit=5000');
+    const data = await r.json();
+    if (data.log && data.log.length) {
+      // Merge con dati locali evitando duplicati per timestamp
+      const existing = new Set(reportLog.map(r => r.ts || r.time));
+      const newEntries = data.log.filter(r => !existing.has(r.ts));
+      reportLog = [...newEntries, ...reportLog].slice(-REPORT_MAX);
+      updateReport();
+      addLog('Report Railway: ' + data.log.length + ' righe caricate (' + data.meta.signals + ' segnali)', 'ok');
+    }
+  } catch(e) {
+    addLog('Errore caricamento report Railway: ' + e.message, 'err');
+  }
+}
+
+async function exportExcelFromRailway() {
+  try {
+    addLog('Download CSV da Railway...', 'info');
+    const url = BACKEND_URL + '/report/csv';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'arbitrage_report_railway.csv';
+    a.click();
+    addLog('CSV Railway scaricato', 'ok');
+  } catch(e) {
+    addLog('Errore download CSV: ' + e.message, 'err');
   }
 }
 
