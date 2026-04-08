@@ -592,10 +592,13 @@ function renderSignalCol(fin,asset,m){
   const direzione=score>=scoreThresh?'UP':score<=-scoreThresh?'DOWN':null;
   const prezzoC=direzione==='UP'?m.prezzoUp:direzione==='DOWN'?m.prezzoDown:null;
   const pnlNetto=prezzoC?parseFloat(((100-prezzoC)-3).toFixed(2)):null;
+  // Blocca se contratto già troppo caro (mercato ha già prezzato)
+  const isProfittevole = prezzoC && prezzoC <= 75 && pnlNetto && pnlNetto >= 5;
+  const direzioneFinal = isProfittevole ? direzione : null;
   const pnl1k=pnlNetto?(pnlNetto/100*1000).toFixed(2):null;
 
   // Registra nel report locale
-  recordSignal(asset,fin,price,m,score,distanza,direzione,pnlNetto);
+  recordSignal(asset,fin,price,m,score,distanza,direzioneFinal,pnlNetto);
 
   // Update max score globale
   if(scoreAbs>maxScore){maxScore=scoreAbs;maxScoreAsset=asset+'/'+fin;}
@@ -605,8 +608,9 @@ function renderSignalCol(fin,asset,m){
   const barColor=above?(score>0?'var(--g)':'var(--rd)'):'var(--am)';
   const tc=timerColor(m.minRimasti);
   let sigStyle,sigText;
-  if(direzione==='UP'){sigStyle=`border-color:var(--g);background:rgba(0,255,65,0.08);color:var(--g)`;sigText=`▲ BUY UP — SCORE ${score.toFixed(2)} ✓`;}
-  else if(direzione==='DOWN'){sigStyle=`border-color:var(--rd);background:rgba(255,58,58,0.06);color:var(--rd)`;sigText=`▼ BUY DOWN — SCORE ${score.toFixed(2)} ✓`;}
+  if(direzioneFinal==='UP'){sigStyle=`border-color:var(--g);background:rgba(0,255,65,0.08);color:var(--g)`;sigText=`▲ BUY UP — SCORE ${score.toFixed(2)} ✓`;}
+  else if(direzioneFinal==='DOWN'){sigStyle=`border-color:var(--rd);background:rgba(255,58,58,0.06);color:var(--rd)`;sigText=`▼ BUY DOWN — SCORE ${score.toFixed(2)} ✓`;}
+  else if(direzione&&!isProfittevole){sigStyle=`border-color:var(--am);background:rgba(255,183,0,0.05);color:var(--am)`;sigText=`⚠ CONTRATTO CARO ${prezzoC}¢ > 75¢ — NON PROFITTEVOLE`;}
   else{sigStyle=`border-color:var(--gdk);color:var(--gdk)`;sigText=`⏳ ATTESA — ${scoreAbs.toFixed(3)} / ${scoreThresh.toFixed(1)}`;}
 
   const finLabel=fin==='5m'?`⚡ ${asset} — 5 MIN`:`◎ ${asset} — 15 MIN`;
@@ -626,7 +630,7 @@ function renderSignalCol(fin,asset,m){
     <div style="padding:6px 8px;text-align:center;font-size:9px;font-weight:bold;letter-spacing:0.08em;border:1px solid;${sigStyle}">${sigText}</div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;padding:5px 8px;background:var(--gfaint);border:1px solid var(--br);font-size:9px;">
       <span style="color:var(--gdk);">P&L su $1,000</span>
-      <span style="color:${pnl1k&&direzione?'var(--g)':'var(--gdk)'};font-weight:bold;">${pnl1k&&direzione?'+$'+pnl1k:'— attesa'}</span>
+      <span style="color:${pnl1k&&direzioneFinal?'var(--g)':direzione&&!isProfittevole?'var(--am)':'var(--gdk)'};font-weight:bold;">${pnl1k&&direzioneFinal?'+$'+pnl1k:direzione&&!isProfittevole?'CONTRATTO CARO':'— attesa'}</span>
     </div>`;
 }
 
@@ -973,6 +977,29 @@ addLog(`Backend: ${BACKEND_URL}`,'info');
 renderRules();
 fetchPrices();
 setInterval(fetchPrices,3000);
+
+// Watchdog: ogni 10 secondi verifica che i dati non siano troppo vecchi
+// e resetta le colonne se il contratto è scaduto
+setInterval(function() {
+  if (!polyData) return;
+  const now = Date.now();
+  ASSETS.forEach(a => {
+    ['5m','15m'].forEach(fin => {
+      const m = polyData[fin] && polyData[fin][a];
+      if (!m) {
+        // Nessun contratto — mostra messaggio
+        const col = document.getElementById('col-'+fin+'-'+a);
+        if (col && col.innerHTML.indexOf('In attesa') < 0 && col.innerHTML.indexOf('Price to beat') < 0) return;
+        return;
+      }
+      // Se minRimasti è quasi zero, resetta
+      if (m.minRimasti < 0.3) {
+        const col = document.getElementById('col-'+fin+'-'+a);
+        if (col) col.innerHTML = '<div style="padding:20px;text-align:center;font-size:9px;color:var(--am);">⏳ Contratto scaduto — attendo nuovo...</div>';
+      }
+    });
+  });
+}, 10000);
 </script>
 </body>
 </html>
