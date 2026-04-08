@@ -404,7 +404,8 @@ let scoreThresh = 1.0;
 let activeAsset = 'BTC';
 let activeTab = 'dashboard';
 let activeHistTab = 'segnali';
-let krakenData = {};      // { 'BTC/USD': 71625.5, ... }
+let krakenData = {};
+let polyFetchedAt = Date.now();      // { 'BTC/USD': 71625.5, ... }
 let polyData = {};        // { '5m': { BTC: {...}, ETH: {...} }, '15m': {...} }
 let krakenPrev = {};      // prezzi precedenti per calcolo %
 let reportLog = [];       // log locale segnali
@@ -462,7 +463,9 @@ async function fetchPrices(){
       krakenData=d.kraken;
     }
     if(d.polymarkets){
+      // Salva timestamp del fetch per calcolo minRimasti in real-time
       polyData=d.polymarkets;
+      polyFetchedAt=Date.now();
     }
 
     updateUI();
@@ -579,16 +582,21 @@ function renderSignalCol(fin,asset,m){
   const cfg=ASSET_CFG[asset];
   const price=krakenData[asset+'/USD']||0;
 
+  // Mostra anche se minRimasti basso — il backend filtra già
   if(!m||!price){
     col.innerHTML='<div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">Nessun contratto attivo</div>';
     return;
   }
 
+  // Calcola minRimasti real-time: sottrai i secondi passati dal fetch
+  const secsPassati = (Date.now() - polyFetchedAt) / 1000;
+  const minRimastiRealtime = Math.max(0, (m.minRimasti || 0) - secsPassati / 60);
   const distanza=price-(m.priceToBeat||price);
-  const volAttesa=cfg.volPerMin*(m.minRimasti||1);
+  const volAttesa=cfg.volPerMin*(minRimastiRealtime||0.1);
   const score=volAttesa>0?parseFloat((distanza/volAttesa).toFixed(4)):0;
   const scoreAbs=Math.abs(score);
   const above=scoreAbs>=scoreThresh;
+  // Usa minRimastiRealtime per il timer display
   const direzione=score>=scoreThresh?'UP':score<=-scoreThresh?'DOWN':null;
   const prezzoC=direzione==='UP'?m.prezzoUp:direzione==='DOWN'?m.prezzoDown:null;
   const pnlNetto=prezzoC?parseFloat(((100-prezzoC)-3).toFixed(2)):null;
@@ -606,7 +614,7 @@ function renderSignalCol(fin,asset,m){
   const scoreColor=above?(score>0?'var(--g)':'var(--rd)'):'var(--am)';
   const barW=Math.min(100,(scoreAbs/2.5*100)).toFixed(0);
   const barColor=above?(score>0?'var(--g)':'var(--rd)'):'var(--am)';
-  const tc=timerColor(m.minRimasti);
+  const tc=timerColor(minRimastiRealtime);
   let sigStyle,sigText;
   if(direzioneFinal==='UP'){sigStyle=`border-color:var(--g);background:rgba(0,255,65,0.08);color:var(--g)`;sigText=`▲ BUY UP — SCORE ${score.toFixed(2)} ✓`;}
   else if(direzioneFinal==='DOWN'){sigStyle=`border-color:var(--rd);background:rgba(255,58,58,0.06);color:var(--rd)`;sigText=`▼ BUY DOWN — SCORE ${score.toFixed(2)} ✓`;}
@@ -993,7 +1001,9 @@ setInterval(function() {
         return;
       }
       // Se minRimasti è quasi zero, resetta
-      if (m.minRimasti < 0.3) {
+      const secsP = (Date.now() - polyFetchedAt) / 1000;
+      const minRT = (m.minRimasti || 0) - secsP / 60;
+      if (minRT < 0) {
         const col = document.getElementById('col-'+fin+'-'+a);
         if (col) col.innerHTML = '<div style="padding:20px;text-align:center;font-size:9px;color:var(--am);">⏳ Contratto scaduto — attendo nuovo...</div>';
       }
