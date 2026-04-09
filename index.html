@@ -463,9 +463,17 @@ async function fetchPrices(){
       krakenData=d.kraken;
     }
     if(d.polymarkets){
-      // Salva timestamp del fetch per calcolo minRimasti in real-time
       polyData=d.polymarkets;
       polyFetchedAt=Date.now();
+      // Calcola e salva timestamp assoluto di scadenza per ogni mercato
+      ['5m','15m'].forEach(fin=>{
+        ['BTC','ETH','SOL','XRP','DOGE'].forEach(asset=>{
+          const m=polyData[fin]&&polyData[fin][asset];
+          if(m&&m.minRimasti&&!m.expiresAt){
+            m.expiresAt=Date.now()+m.minRimasti*60*1000;
+          }
+        });
+      });
     }
 
     updateUI();
@@ -588,9 +596,10 @@ function renderSignalCol(fin,asset,m){
     return;
   }
 
-  // Calcola minRimasti real-time: sottrai i secondi passati dal fetch
-  const secsPassati = (Date.now() - polyFetchedAt) / 1000;
-  const minRimastiRealtime = Math.max(0, (m.minRimasti || 0) - secsPassati / 60);
+  // Calcola minRimasti real-time dal timestamp assoluto di scadenza
+  const minRimastiRealtime = m.expiresAt
+    ? Math.max(0, (m.expiresAt - Date.now()) / 60000)
+    : Math.max(0, (m.minRimasti || 0));
   const distanza=price-(m.priceToBeat||price);
   const volAttesa=cfg.volPerMin*(minRimastiRealtime||0.1);
   const score=volAttesa>0?parseFloat((distanza/volAttesa).toFixed(4)):0;
@@ -1001,8 +1010,7 @@ setInterval(function() {
         return;
       }
       // Se minRimasti è quasi zero, resetta
-      const secsP = (Date.now() - polyFetchedAt) / 1000;
-      const minRT = (m.minRimasti || 0) - secsP / 60;
+      const minRT = m.expiresAt ? (m.expiresAt - Date.now()) / 60000 : m.minRimasti;
       if (minRT < 0) {
         const col = document.getElementById('col-'+fin+'-'+a);
         if (col) col.innerHTML = '<div style="padding:20px;text-align:center;font-size:9px;color:var(--am);">⏳ Contratto scaduto — attendo nuovo...</div>';
