@@ -995,6 +995,23 @@ renderRules();
 fetchPrices();
 setInterval(fetchPrices,3000);
 
+// Loop timer: aggiorna solo i timer rings ogni secondo senza riscrivere le colonne
+setInterval(function() {
+  ['BTC','ETH','SOL','XRP','DOGE'].forEach(asset => {
+    ['5m','15m'].forEach(fin => {
+      const m = polyData[fin] && polyData[fin][asset];
+      if (!m || !m.expiresAt) return;
+      const minRT = Math.max(0, (m.expiresAt - Date.now()) / 60000);
+      const el = document.getElementById('timer-ring-' + fin + '-' + asset);
+      if (!el) return;
+      const tc = minRT < 1 ? 'var(--rd)' : minRT < 3 ? 'var(--am)' : 'var(--g)';
+      el.textContent = fmtTimer(minRT);
+      el.style.borderColor = tc;
+      el.style.color = tc;
+    });
+  });
+}, 1000);
+
 // Watchdog: ogni 10 secondi verifica che i dati non siano troppo vecchi
 // e resetta le colonne se il contratto è scaduto
 setInterval(function() {
