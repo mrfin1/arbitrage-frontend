@@ -216,40 +216,21 @@ input[type=range]{accent-color:var(--g);}
       </div>
     </div>
     <!-- Asset selector -->
-    <div style="display:flex;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--br);flex-wrap:wrap;">
-      <button id="atab-BTC"  onclick="selectAsset('BTC')"  class="asset-tab active-tab" style="border-color:var(--g);">
-        <span class="at-sym" style="color:var(--g);">BTC</span><span class="at-price" id="ap-BTC">—</span><span class="at-chg" id="ac-BTC">—</span>
-      </button>
-      <button id="atab-ETH"  onclick="selectAsset('ETH')"  class="asset-tab">
-        <span class="at-sym" style="color:var(--cy);">ETH</span><span class="at-price" id="ap-ETH">—</span><span class="at-chg" id="ac-ETH">—</span>
-      </button>
-      <button id="atab-SOL"  onclick="selectAsset('SOL')"  class="asset-tab">
-        <span class="at-sym" style="color:var(--pu);">SOL</span><span class="at-price" id="ap-SOL">—</span><span class="at-chg" id="ac-SOL">—</span>
-      </button>
-      <button id="atab-XRP"  onclick="selectAsset('XRP')"  class="asset-tab">
-        <span class="at-sym" style="color:var(--am);">XRP</span><span class="at-price" id="ap-XRP">—</span><span class="at-chg" id="ac-XRP">—</span>
-      </button>
-      <button id="atab-DOGE" onclick="selectAsset('DOGE')" class="asset-tab">
-        <span class="at-sym" style="color:var(--rd);">DOGE</span><span class="at-price" id="ap-DOGE">—</span><span class="at-chg" id="ac-DOGE">—</span>
-      </button>
+    <div style="display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--br);">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:11px;font-weight:bold;color:var(--g);">BTC/USD</span>
+        <span style="font-size:10px;color:var(--g);" id="ap-BTC">—</span>
+      </div>
+      <span style="font-size:10px;" id="ac-BTC">—</span>
     </div>
     <!-- Pannelli asset -->
     <div id="apanel-BTC"  style="display:grid;grid-template-columns:1fr 1fr;">
       <div id="col-5m-BTC"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
       <div id="col-15m-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
     </div>
-    <div id="apanel-ETH"  style="display:none;grid-template-columns:1fr 1fr;">
-      <div id="col-5m-ETH"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-      <div id="col-15m-ETH" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-    </div>
-    <div id="apanel-SOL"  style="display:none;grid-template-columns:1fr 1fr;">
-      <div id="col-5m-SOL"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-      <div id="col-15m-SOL" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-    </div>
-    <div id="apanel-XRP"  style="display:none;grid-template-columns:1fr 1fr;">
-      <div id="col-5m-XRP"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-      <div id="col-15m-XRP" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-    </div>
+
+
+
     <div id="apanel-DOGE" style="display:none;grid-template-columns:1fr 1fr;">
       <div id="col-5m-DOGE"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
       <div id="col-15m-DOGE" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
@@ -391,13 +372,9 @@ const CAPITAL = 1000;
 
 // ── ASSET CONFIG ─────────────────────────────────────────
 const ASSET_CFG = {
-  BTC:  { color:'var(--g)',  volPerMin:30,   decimals:2, idx:0 },
-  ETH:  { color:'var(--cy)', volPerMin:2,    decimals:2, idx:1 },
-  SOL:  { color:'var(--pu)', volPerMin:0.5,  decimals:2, idx:2 },
-  XRP:  { color:'var(--am)', volPerMin:0.05, decimals:4, idx:3 },
-  DOGE: { color:'var(--rd)', volPerMin:0.01, decimals:4, idx:4 }
+  BTC: { color:'var(--g)', volPerMin:30, decimals:2, idx:0 }
 };
-const ASSETS = ['BTC','ETH','SOL','XRP','DOGE'];
+const ASSETS = ['BTC'];
 
 // ── STATO GLOBALE ─────────────────────────────────────────
 let scoreThresh = 1.0;
@@ -467,7 +444,7 @@ async function fetchPrices(){
       polyFetchedAt=Date.now();
       // Calcola e salva timestamp assoluto di scadenza per ogni mercato
       ['5m','15m'].forEach(fin=>{
-        ['BTC','ETH','SOL','XRP','DOGE'].forEach(asset=>{
+        ['BTC'].forEach(asset=>{
           const m=polyData[fin]&&polyData[fin][asset];
           if(m&&m.minRimasti&&!m.expiresAt){
             m.expiresAt=Date.now()+m.minRimasti*60*1000;
@@ -511,20 +488,15 @@ function updateUI(){
 }
 
 function renderKrakenFeed(){
-  const rows=ASSETS.map(a=>{
-    const sym=a+'/USD';
-    const price=krakenData[sym]||0;
-    const prev=krakenPrev[sym]||price;
-    const chg=prev?((price-prev)/prev*100):0;
-    if(!price)return'';
-    const cfg=ASSET_CFG[a];
-    return`<tr>
-      <td style="color:${cfg.color};">${sym}</td>
-      <td style="color:var(--g);text-align:right;font-size:12px;">${fmtPrice(a,price)}</td>
-      <td style="color:${chg>=0?'var(--g)':'var(--rd)'};text-align:right;font-size:9px;">${chg>=0?'+':''}${chg.toFixed(3)}%</td>
-      <td style="color:var(--g);font-size:8px;text-align:right;font-weight:bold;">LIVE</td>
-    </tr>`;
-  }).filter(Boolean).join('');
+  const price=krakenData['BTC/USD']||0;
+  const prev=krakenPrev['BTC/USD']||price;
+  const chg=prev?((price-prev)/prev*100):0;
+  const rows=price?`<tr>
+    <td style="color:var(--g);">BTC/USD</td>
+    <td style="color:var(--g);text-align:right;font-size:12px;">$${price.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="color:${chg>=0?'var(--g)':'var(--rd)'};text-align:right;font-size:9px;">${chg>=0?'+':''}${chg.toFixed(3)}%</td>
+    <td style="color:var(--g);font-size:8px;text-align:right;font-weight:bold;">LIVE</td>
+  </tr>`:''
   document.getElementById('kraken-rows').innerHTML=rows||'<tr><td colspan="4" style="color:var(--gdk);">In connessione...</td></tr>';
   document.getElementById('kraken-src').textContent='LIVE';
   document.getElementById('kraken-src').style.color='var(--g)';
@@ -532,7 +504,7 @@ function renderKrakenFeed(){
 
 function renderPolyFeed(){
   const rows=[];
-  ASSETS.forEach(a=>{
+  ['BTC'].forEach(a=>{
     ['5m','15m'].forEach(fin=>{
       const m=polyData[fin]&&polyData[fin][a];
       if(!m)return;
@@ -549,34 +521,19 @@ function renderPolyFeed(){
 }
 
 function updateAssetTabs(){
-  ASSETS.forEach(a=>{
-    const cfg=ASSET_CFG[a];
-    const price=krakenData[a+'/USD']||0;
-    const prev=krakenPrev[a+'/USD']||price;
-    const chg=prev?((price-prev)/prev*100):0;
-    const pEl=document.getElementById('ap-'+a);
-    const cEl=document.getElementById('ac-'+a);
-    if(pEl&&price)pEl.textContent=fmtPrice(a,price);
-    if(cEl&&price){cEl.textContent=(chg>=0?'+':'')+chg.toFixed(3)+'%';cEl.style.color=chg>=0?'var(--g)':'var(--rd)';}
-  });
+  const price=krakenData['BTC/USD']||0;
+  const prev=krakenPrev['BTC/USD']||price;
+  const chg=prev?((price-prev)/prev*100):0;
+  const pEl=document.getElementById('ap-BTC');
+  const cEl=document.getElementById('ac-BTC');
+  if(pEl&&price)pEl.textContent='$'+price.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(cEl&&price){cEl.textContent=(chg>=0?'+':'')+chg.toFixed(3)+'%';cEl.style.color=chg>=0?'var(--g)':'var(--rd)';}
 }
 
-function selectAsset(a){
-  activeAsset=a;
-  ASSETS.forEach(asset=>{
-    const panel=document.getElementById('apanel-'+asset);
-    const tab=document.getElementById('atab-'+asset);
-    if(panel)panel.style.display=asset===a?'grid':'none';
-    if(tab){
-      tab.classList.toggle('active-tab',asset===a);
-      tab.style.borderColor=asset===a?ASSET_CFG[asset].color:'var(--br)';
-    }
-  });
-  renderSignals();
-}
+function selectAsset(a){ activeAsset='BTC'; renderSignals(); }
 
 function renderSignals(){
-  ASSETS.forEach(a=>{
+  ['BTC'].forEach(a=>{
     ['5m','15m'].forEach(fin=>{
       const m=polyData[fin]&&polyData[fin][a];
       renderSignalCol(fin,a,m);
@@ -997,7 +954,7 @@ setInterval(fetchPrices,3000);
 
 // Loop timer: aggiorna solo i timer rings ogni secondo senza riscrivere le colonne
 setInterval(function() {
-  ['BTC','ETH','SOL','XRP','DOGE'].forEach(asset => {
+  ['BTC'].forEach(asset => {
     ['5m','15m'].forEach(fin => {
       const m = polyData[fin] && polyData[fin][asset];
       if (!m || !m.expiresAt) return;
