@@ -579,9 +579,9 @@ function selectFinestra(fin) {
   });
   // Mostra pannello giusto
   const mainPanel = document.getElementById('apanel-BTC');
-  const panel1h   = document.getElementById('fpanel-1h');
   const panel4h   = document.getElementById('fpanel-4h');
   if (mainPanel) mainPanel.style.display = (fin==='5m'||fin==='15m') ? 'grid' : 'none';
+  const panel1h   = document.getElementById('fpanel-1h');
   if (panel1h)   panel1h.style.display   = fin==='1h' ? 'grid' : 'none';
   if (panel4h)   panel4h.style.display   = fin==='4h' ? 'grid' : 'none';
 
