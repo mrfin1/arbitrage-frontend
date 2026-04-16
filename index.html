@@ -2,8 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Arbitrage Terminal</title>
+<title>Arbitrage Terminal v4.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -633,7 +636,7 @@ function renderSignalCol(fin,asset,m){
   const pnl1k=pnlNetto?(pnlNetto/100*1000).toFixed(2):null;
 
   // Registra nel report locale
-  recordSignal(asset,fin,price,m,score,distanza,direzioneFinal,pnlNetto,{momentum:dati&&dati.momentum!==undefined?dati.momentum:null});
+  recordSignal(asset,fin,price,m,score,distanza,direzioneFinal,pnlNetto,null);
 
   // Update max score globale
   if(scoreAbs>maxScore){maxScore=scoreAbs;maxScoreAsset=asset+'/'+fin;}
