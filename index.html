@@ -224,9 +224,24 @@ input[type=range]{accent-color:var(--g);}
       <span style="font-size:10px;" id="ac-BTC">—</span>
     </div>
     <!-- Pannelli asset -->
-    <div id="apanel-BTC"  style="display:grid;grid-template-columns:1fr 1fr;">
+    <!-- Tab selezione finestra -->
+    <div style="display:flex;background:var(--bg3);border-bottom:1px solid var(--br);">
+      <button id="ftab-5m"  onclick="selectFinestra('5m')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid var(--g);color:var(--g);background:var(--bg3);letter-spacing:0.08em;">⚡ 5M</button>
+      <button id="ftab-15m" onclick="selectFinestra('15m')" style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◎ 15M</button>
+      <button id="ftab-1h"  onclick="selectFinestra('1h')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◈ 1H</button>
+      <button id="ftab-4h"  onclick="selectFinestra('4h')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◉ 4H</button>
+    </div>
+    <div id="apanel-BTC" style="display:grid;grid-template-columns:1fr 1fr;">
       <div id="col-5m-BTC"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
       <div id="col-15m-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
+    </div>
+    <div id="fpanel-1h" style="display:none;grid-template-columns:1fr 1fr;">
+      <div id="col-1h-BTC"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto 1h...</div></div>
+      <div id="col-1h2-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa prossimo contratto 1h...</div></div>
+    </div>
+    <div id="fpanel-4h" style="display:none;grid-template-columns:1fr 1fr;">
+      <div id="col-4h-BTC"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto 4h...</div></div>
+      <div id="col-4h2-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa prossimo contratto 4h...</div></div>
     </div>
 
 
@@ -439,6 +454,9 @@ async function fetchPrices(){
       krakenPrev={...krakenData};
       krakenData=d.kraken;
     }
+    if(d.chainlink&&d.chainlink.price){
+      krakenData['CHAINLINK']=d.chainlink.price;
+    }
     if(d.polymarkets){
       polyData=d.polymarkets;
       polyFetchedAt=Date.now();
@@ -491,12 +509,19 @@ function renderKrakenFeed(){
   const price=krakenData['BTC/USD']||0;
   const prev=krakenPrev['BTC/USD']||price;
   const chg=prev?((price-prev)/prev*100):0;
+  const cl = krakenData['CHAINLINK'] || null;
+  const diff = price && cl ? parseFloat((price - cl).toFixed(2)) : null;
   const rows=price?`<tr>
-    <td style="color:var(--g);">BTC/USD</td>
+    <td style="color:var(--g);">BTC/USD Kraken</td>
     <td style="color:var(--g);text-align:right;font-size:12px;">$${price.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     <td style="color:${chg>=0?'var(--g)':'var(--rd)'};text-align:right;font-size:9px;">${chg>=0?'+':''}${chg.toFixed(3)}%</td>
     <td style="color:var(--g);font-size:8px;text-align:right;font-weight:bold;">LIVE</td>
-  </tr>`:''
+  </tr>${cl?`<tr>
+    <td style="color:var(--cy);">BTC/USD Chainlink</td>
+    <td style="color:var(--cy);text-align:right;font-size:12px;">$${cl.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="color:var(--gdk);text-align:right;font-size:9px;">fonte Polymarket</td>
+    <td style="color:${diff!==null&&Math.abs(diff)>100?'var(--am)':'var(--gdk)'};font-size:8px;text-align:right;">${diff!==null?(diff>=0?'+':'')+diff.toFixed(0)+'$':''}</td>
+  </tr>`:''}`:''
   document.getElementById('kraken-rows').innerHTML=rows||'<tr><td colspan="4" style="color:var(--gdk);">In connessione...</td></tr>';
   document.getElementById('kraken-src').textContent='LIVE';
   document.getElementById('kraken-src').style.color='var(--g)';
@@ -532,6 +557,41 @@ function updateAssetTabs(){
 
 function selectAsset(a){ activeAsset='BTC'; renderSignals(); }
 
+let activeFinestra = '5m';
+function selectFinestra(fin) {
+  activeFinestra = fin;
+  ['5m','15m','1h','4h'].forEach(f => {
+    const btn = document.getElementById('ftab-' + f);
+    if (!btn) return;
+    const colors = {'5m':'var(--g)','15m':'var(--am)','1h':'var(--cy)','4h':'var(--pu)'};
+    if (f === fin) {
+      btn.style.borderBottomColor = colors[f] || 'var(--g)';
+      btn.style.color = colors[f] || 'var(--g)';
+      btn.style.background = 'var(--bg3)';
+    } else {
+      btn.style.borderBottomColor = 'transparent';
+      btn.style.color = 'var(--gdk)';
+      btn.style.background = 'transparent';
+    }
+  });
+  // Mostra pannello giusto
+  const mainPanel = document.getElementById('apanel-BTC');
+  const panel1h   = document.getElementById('fpanel-1h');
+  const panel4h   = document.getElementById('fpanel-4h');
+  if (mainPanel) mainPanel.style.display = (fin==='5m'||fin==='15m') ? 'grid' : 'none';
+  if (panel1h)   panel1h.style.display   = fin==='1h' ? 'grid' : 'none';
+  if (panel4h)   panel4h.style.display   = fin==='4h' ? 'grid' : 'none';
+
+  // Se 5m o 15m, aggiorna colonne visibili
+  if (fin === '5m' || fin === '15m') {
+    ['5m','15m'].forEach(f => {
+      const col = document.getElementById('col-' + f + '-BTC');
+      if (col) col.style.display = f === fin ? '' : '';
+    });
+  }
+  renderSignals();
+}
+
 function renderSignals(){
   ['BTC'].forEach(a=>{
     ['5m','15m'].forEach(fin=>{
@@ -542,7 +602,8 @@ function renderSignals(){
 }
 
 function renderSignalCol(fin,asset,m){
-  const col=document.getElementById('col-'+fin+'-'+asset);
+  const colId = (fin==='1h'||fin==='4h') ? 'col-'+fin+'-'+asset : 'col-'+fin+'-'+asset;
+  const col=document.getElementById(colId);
   if(!col)return;
   const cfg=ASSET_CFG[asset];
   const price=krakenData[asset+'/USD']||0;
@@ -572,7 +633,7 @@ function renderSignalCol(fin,asset,m){
   const pnl1k=pnlNetto?(pnlNetto/100*1000).toFixed(2):null;
 
   // Registra nel report locale
-  recordSignal(asset,fin,price,m,score,distanza,direzioneFinal,pnlNetto);
+  recordSignal(asset,fin,price,m,score,distanza,direzioneFinal,pnlNetto,{momentum:dati&&dati.momentum!==undefined?dati.momentum:null});
 
   // Update max score globale
   if(scoreAbs>maxScore){maxScore=scoreAbs;maxScoreAsset=asset+'/'+fin;}
@@ -610,7 +671,7 @@ function renderSignalCol(fin,asset,m){
 
 // ── REGISTRAZIONE SEGNALI REALI ───────────────────────────
 let lastRecordKey = {};
-function recordSignal(asset,fin,price,m,score,distanza,direzione,pnlNetto){
+function recordSignal(asset,fin,price,m,score,distanza,direzione,pnlNetto,extra){
   // Registra max ogni 5 secondi per asset/finestra
   const key=asset+'-'+fin;
   const now=Date.now();
@@ -625,6 +686,7 @@ function recordSignal(asset,fin,price,m,score,distanza,direzione,pnlNetto){
     distanza:parseFloat(distanza.toFixed(4)),
     minRimasti:m.minRimasti,
     score:parseFloat(score.toFixed(4)),
+    momentum:extra&&extra.momentum!==undefined?extra.momentum:null,
     prezzoUp:m.prezzoUp,
     prezzoDown:m.prezzoDown,
     direzione,
@@ -955,7 +1017,7 @@ setInterval(fetchPrices,3000);
 // Loop timer: aggiorna solo i timer rings ogni secondo senza riscrivere le colonne
 setInterval(function() {
   ['BTC'].forEach(asset => {
-    ['5m','15m'].forEach(fin => {
+    ['5m','15m','1h','4h'].forEach(fin => {
       const m = polyData[fin] && polyData[fin][asset];
       if (!m || !m.expiresAt) return;
       const minRT = Math.max(0, (m.expiresAt - Date.now()) / 60000);
