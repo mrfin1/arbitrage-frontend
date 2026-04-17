@@ -212,7 +212,7 @@ input[type=range]{accent-color:var(--g);}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:#001505;border-bottom:1px solid var(--g);">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="background:var(--g);color:#000;padding:1px 7px;font-size:8px;font-weight:bold;">SEGNALI</span>
-        <span style="font-size:9px;color:var(--g);font-weight:bold;letter-spacing:0.1em;">MONITORAGGIO PARALLELO 5M × 15M</span>
+        <span style="font-size:9px;color:var(--g);font-weight:bold;letter-spacing:0.1em;">MONITORAGGIO PARALLELO 5M × 15M × 1H × 4H</span>
       </div>
       <div style="font-size:8px;color:var(--gdk);">SOGLIA: <span id="score-thresh-lbl" style="color:var(--g);">1.0</span>
         <input type="range" min="0.5" max="2.5" step="0.1" value="1.0" id="score-thresh-sl" style="width:50px;margin-left:5px;vertical-align:middle;" oninput="setScoreThresh(this.value)">
@@ -227,50 +227,24 @@ input[type=range]{accent-color:var(--g);}
       <span style="font-size:10px;" id="ac-BTC">—</span>
     </div>
     <!-- Pannelli asset -->
-    <!-- Tab selezione finestra -->
-    <div style="display:flex;background:var(--bg3);border-bottom:1px solid var(--br);">
-      <button id="ftab-5m"  onclick="selectFinestra('5m')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid var(--g);color:var(--g);background:var(--bg3);letter-spacing:0.08em;">⚡ 5M</button>
-      <button id="ftab-15m" onclick="selectFinestra('15m')" style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◎ 15M</button>
-      <button id="ftab-1h"  onclick="selectFinestra('1h')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◈ 1H</button>
-      <button id="ftab-4h"  onclick="selectFinestra('4h')"  style="padding:5px 14px;font-size:9px;font-family:var(--mono);cursor:pointer;border:none;border-right:1px solid var(--br);border-bottom:2px solid transparent;color:var(--gdk);background:transparent;letter-spacing:0.08em;">◉ 4H</button>
-    </div>
-    <div id="apanel-BTC" style="display:grid;grid-template-columns:1fr 1fr;">
-      <div id="col-5m-BTC"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-      <div id="col-15m-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-    </div>
-    <div id="fpanel-1h" style="display:none;grid-template-columns:1fr 1fr;">
+
+    <!-- GRIGLIA 2x2 tutte le finestre -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;border-top:1px solid var(--br);">
+
+      <!-- 5M -->
+      <div id="col-5m-BTC" style="padding:12px 14px;border-right:1px solid var(--br);border-bottom:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
+
+      <!-- 15M -->
+      <div id="col-15m-BTC" style="padding:12px 14px;border-bottom:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
+
+      <!-- 1H -->
       <div id="col-1h-BTC" style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto 1h...</div></div>
-      <div id="col-1h-info" style="padding:12px 14px;font-size:9px;color:var(--gdk);">
-        <div style="margin-bottom:8px;font-size:8px;letter-spacing:0.1em;color:var(--gdk);border-bottom:1px solid var(--br);padding-bottom:5px;">◈ FINESTRA 1H — INFO</div>
-        <div style="margin-bottom:6px;color:var(--cy);">Fonte risoluzione: <span style="color:var(--g);">Binance BTC/USDT</span></div>
-        <div style="margin-bottom:6px;">Durata contratto: <span style="color:var(--g);">60 minuti</span></div>
-        <div style="margin-bottom:6px;">Target: prezzo apertura candela 1H</div>
-        <div style="margin-bottom:6px;">Volume tipico: <span style="color:var(--g);">$50K-$100K</span></div>
-        <div style="margin-top:12px;padding:6px 8px;border:1px solid var(--br);font-size:8px;color:var(--gdk);">
-          I segnali 1H appaiono quando BTC si allontana significativamente dal prezzo di apertura della candela oraria
-        </div>
-      </div>
-    </div>
-    <div id="fpanel-4h" style="display:none;grid-template-columns:1fr 1fr;">
-      <div id="col-4h-BTC" style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto 4h...</div></div>
-      <div id="col-4h-info" style="padding:12px 14px;font-size:9px;color:var(--gdk);">
-        <div style="margin-bottom:8px;font-size:8px;letter-spacing:0.1em;color:var(--gdk);border-bottom:1px solid var(--br);padding-bottom:5px;">◉ FINESTRA 4H — INFO</div>
-        <div style="margin-bottom:6px;color:var(--cy);">Fonte risoluzione: <span style="color:var(--g);">Chainlink BTC/USD</span></div>
-        <div style="margin-bottom:6px;">Durata contratto: <span style="color:var(--g);">240 minuti</span></div>
-        <div style="margin-bottom:6px;">Target: prezzo apertura finestra 4H</div>
-        <div style="margin-bottom:6px;">Volume tipico: <span style="color:var(--g);">$4K-$10K</span></div>
-        <div style="margin-top:12px;padding:6px 8px;border:1px solid var(--br);font-size:8px;color:var(--gdk);">
-          I segnali 4H appaiono quando BTC mantiene un movimento direzionale sostenuto nel corso di ore
-        </div>
-      </div>
+
+      <!-- 4H -->
+      <div id="col-4h-BTC" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto 4h...</div></div>
+
     </div>
 
-
-
-    <div id="apanel-DOGE" style="display:none;grid-template-columns:1fr 1fr;">
-      <div id="col-5m-DOGE"  style="padding:12px 14px;border-right:1px solid var(--br);"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-      <div id="col-15m-DOGE" style="padding:12px 14px;"><div style="padding:20px;text-align:center;font-size:9px;color:var(--gdk);">In attesa contratto...</div></div>
-    </div>
   </div>
 
   <!-- ULTIME 10 -->
@@ -623,8 +597,7 @@ function renderSignals(){
 }
 
 function renderSignalCol(fin,asset,m){
-  const colId = (fin==='1h'||fin==='4h') ? 'col-'+fin+'-'+asset : 'col-'+fin+'-'+asset;
-  const col=document.getElementById(colId);
+  const col=document.getElementById('col-'+fin+'-'+asset);
   if(!col)return;
   const cfg=ASSET_CFG[asset];
   const price=krakenData[asset+'/USD']||0;
@@ -669,7 +642,8 @@ function renderSignalCol(fin,asset,m){
   else if(direzione&&!isProfittevole){sigStyle=`border-color:var(--am);background:rgba(255,183,0,0.05);color:var(--am)`;sigText=`⚠ CONTRATTO CARO ${prezzoC}¢ > 75¢ — NON PROFITTEVOLE`;}
   else{sigStyle=`border-color:var(--gdk);color:var(--gdk)`;sigText=`⏳ ATTESA — ${scoreAbs.toFixed(3)} / ${scoreThresh.toFixed(1)}`;}
 
-  const finLabel=fin==='5m'?`⚡ ${asset} — 5 MIN`:`◎ ${asset} — 15 MIN`;
+  const finLabels = {'5m':`⚡ ${asset} — 5 MIN`,'15m':`◎ ${asset} — 15 MIN`,'1h':`◈ ${asset} — 1 ORA`,'4h':`◉ ${asset} — 4 ORE`};
+  const finLabel = finLabels[fin] || fin.toUpperCase();
 
   col.innerHTML=
     `<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--br);">
