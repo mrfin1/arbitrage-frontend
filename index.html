@@ -375,23 +375,6 @@ function updateConnPill(s){
   else{el.textContent='● CONN...';el.className='pill pill-try';}
 }
 
-  strip.innerHTML=html;
-  // ORA pill
-  const op=document.getElementById('ora-pill');
-  if(op){
-    if(ORE_PREM.has(h)){op.textContent='★ ORA '+String(h).padStart(2,'0');op.style.background='var(--g)';op.style.color='#000';}
-    else if(ORE_DEB.has(h)){op.textContent='✗ ORA '+String(h).padStart(2,'0');op.style.background='var(--rd)';op.style.color='#fff';}
-    else{op.textContent='◉ ORA '+String(h).padStart(2,'0');op.style.background='var(--gdk)';op.style.color='#000';}
-  }
-  // Filtro label nei segnali
-  const fl=document.getElementById('filtro-lbl');
-  if(fl){
-    if(!filtroOraAttivo){fl.textContent='⏸ FILTRO OFF — TUTTE ORE';fl.style.borderColor='var(--am)';fl.style.color='var(--am)';}
-    else if(ORE_PREM.has(h)){fl.textContent='★ ORA PREMIUM — ATTIVO';fl.style.borderColor='var(--g)';fl.style.color='var(--g)';}
-    else if(ORE_DEB.has(h)){fl.textContent='✗ ORA DEBOLE — SOPPRESSO';fl.style.borderColor='var(--rd)';fl.style.color='var(--rd)';}
-    else{fl.textContent='◉ ORA NEUTRA — ATTIVO';fl.style.borderColor='var(--am)';fl.style.color='var(--am)';}
-  }
-}
 
 // Fetch prezzi
 async function fetchPrices(){
